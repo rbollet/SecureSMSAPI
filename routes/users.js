@@ -39,35 +39,57 @@ router.post('/create', function (req, res) {
     //Ckeck uid in database to be sure a uuid
 
     if (req.body.password && req.body.password.length > 5) {
-
-        var uid = uuid.v4();
         var password = req.body.password;
-        var hash = crypto.createHash('sha512').update(uid + password + req.app.get('config').secret, 'utf-8').digest('hex');
 
-        var newUser = new User({
-            uid: uid,
-            password: hash
-        });
 
-        newUser.save()
-                .then(function () {
 
-                    res.json({
-                        error: false,
-                        uid: uid,
-                        msg: 'Votre compte a été bien créé !',
-                        alert: 'success'
+        var hasUpperCase = /[A-Z]/.test(password);
+        var hasLowerCase = /[a-z]/.test(password);
+        var hasNumbers = /\d/.test(password);
+        var hasNonalphas = /\W/.test(password);
+
+        console.log(hasNonalphas);
+        if (hasUpperCase + hasLowerCase + hasNumbers + hasNonalphas < 4) {
+            res.json({
+                error: true,
+
+                msg: 'Votre mot de passe est trop faible !',
+                alert: 'waring'
+            });
+
+        } else {
+
+
+
+            var uid = uuid.v4();
+
+            var hash = crypto.createHash('sha512').update(uid + password + req.app.get('config').secret, 'utf-8').digest('hex');
+
+            var newUser = new User({
+                uid: uid,
+                password: hash
+            });
+
+            newUser.save()
+                    .then(function () {
+
+                        res.json({
+                            error: false,
+                            uid: uid,
+                            msg: 'Votre compte a été bien créé !',
+                            alert: 'success'
+                        });
+
+                    }, function (err) {
+                        console.log(err);
+                        res.json({
+                            error: true,
+                            msg: 'Le mot de passe ne respecte pas la complexité.',
+                            alert: 'warning'
+                        });
+
                     });
-
-                }, function (err) {
-                    console.log(err);
-                    res.json({
-                        error: true,
-                        msg: 'Le mot de passe ne respecte pas la complexité.',
-                        alert: 'warning'
-                    });
-
-                });
+        }
     } else {
 
         res.json({
@@ -76,6 +98,7 @@ router.post('/create', function (req, res) {
             alert: 'warning'
         });
     }
+
 });
 
 /* POST - Login page. */
@@ -180,9 +203,9 @@ router.post('/modify/password', checkToken(), function (req, res, next) {
     //Check complexe password
     //Ckeck uid
 
-    if (req.body.uuid && req.body.oldpassword) {
+    if (req.body.oldpassword && req.body.newpassword.length > 7) {
 
-        if (req.body.newpassword && req.body.newpassword.length > 5) {
+        if (req.body.newpassword && req.body.newpassword.length > 7) {
             var uid = uuid.v4();
             var password = req.body.password;
             var hash = crypto.createHash('sha512').update(uid + password + salt, 'utf-8').digest('hex');
