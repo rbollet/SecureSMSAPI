@@ -15,7 +15,7 @@ db.on('open', function(){
 var Schema = mongoose.Schema;
 
 var userSchema = new Schema({
-    identifiant: String,
+    uid: String,
     password: {type: String, required: "Le mot de passe est obligatoire"},
     created_at: { type : Date, default : Date.now },
     updated_at: { type : Date, default : Date.now },

@@ -9,7 +9,7 @@ HOW TO INSTALL :
 - cd SecureSMSApi
 - npm install
 - npm start
-- Read config.dist.js and configDB.js inf private folder
+- Read config.dist.js and configDB.dist.js in private folder
 - Go to localhost:3000
 
 HOW TO CONNECT :

@@ -7,7 +7,7 @@ var jwt = require('jsonwebtoken');
 var Cookies = require("cookies");
 
 
-function checkToken(groupe) {
+function checkToken() {
     return function (req, res, next) {
         req.decoded = false;
         // check header or url parameters or post parameters for token
@@ -19,40 +19,31 @@ function checkToken(groupe) {
             var token = new Cookies(req, res).get('access_token');
         }
 
+        console.log(token);
+
+
         if (typeof (token) !== 'undefined') {
 
             // verifies secret and checks exp
             jwt.verify(token, req.app.get('config').secret, function (err, decoded) {
                 if (err) {
-                    res.redirect('/login', 200, {
-                        error: true,
-                        msg: 'Vous devez vous (re)connecter !'
-                    });
-                } else {
-                    console.log("user groups : " + decoded._doc.groupe);
-                    // if everything is good, save to request for use in other routes
+                    req.decoded = false;
+                    next();
 
-                    if (typeof (decoded._doc.groupe) !== 'undefined') {
-                        if (groupe.indexOf(decoded._doc.groupe) > -1) {
-                            req.decoded = decoded;
-                            next();
-                        } else {
-                            res.redirect('/erreur', 403, {
-                                error: true,
-                                msg: "Vous n'avez pas les droits !"
-                            });
-                        }
-                    } else {
-                        res.redirect('/erreur', 403, {
-                            error: true,
-                            msg: "Vous n'avez pas les droits !"
-                        });
-                    }
+
+                } else {
+                   
+                    console.log(decoded);
+                    req.decoded = decoded;
+                    next();
+
+
                 }
             });
         } else {
+            req.decoded = false;
+            next();
 
-            res.redirect('/login', 200, {error: true, msg: 'Vous devez vous (re)connecter !'});
         }
     };
 }
