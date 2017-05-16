@@ -19,7 +19,10 @@ var userSchema = new Schema({
     password: {type: String, required: "Le mot de passe est obligatoire"},
     created_at: { type : Date, default : Date.now },
     updated_at: { type : Date, default : Date.now },
-    last_connection_at: { type : Date, default : Date.now }
+    last_connection_at: { type : Date, default : Date.now },
+    contacts: [{type : mongoose.Schema.Types.ObjectId, ref : "User", required: false}]
+    
+    //resultatsEvaluations : [{ type : mongoose.Schema.Types.ObjectId, ref : "EvaluationApprenant", required: false}],
 });
 
 // Create a model using userSchema

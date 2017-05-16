@@ -19,7 +19,7 @@ function checkToken() {
             var token = new Cookies(req, res).get('access_token');
         }
 
-        console.log(token);
+        //console.log(token);
 
         if (typeof (token) !== 'undefined') {
 
@@ -37,7 +37,7 @@ function checkToken() {
 
                 } else {
 
-                    console.log(decoded);
+                    //console.log(decoded);
                     req.decoded = decoded;
 
                     next();

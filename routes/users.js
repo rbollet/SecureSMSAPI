@@ -15,6 +15,7 @@ var jwt = require('jsonwebtoken');
 var Cookies = require("cookies");
 var checkFormLogin = require('../services/checkFormLogin');
 var checkPassword = require('../services/checkPassword');
+var checkContact = require('../services/checkContact');
 
 var checkToken = require('../auth/checkToken');
 
@@ -166,7 +167,7 @@ router.get('/auth', checkToken(), function (req, res, next) {
 });
 
 
-/* TODO POST - Update password */
+/* POST - Update password */
 router.post('/modify/password', checkToken(), function (req, res, next) {
 
     console.log('uid : ' + req.body.uid);
@@ -239,6 +240,63 @@ router.post('/modify/password', checkToken(), function (req, res, next) {
             alert: 'warning'
         });
     }
+
+});
+
+/* GET logout page. */
+router.get('/contacts', checkToken(), function (req, res, next) {
+
+    var id = req.decoded._doc._id;
+
+    var contacts = req.decoded._doc.contacts;
+
+
+    res.json({
+        error: false,
+        contacts: contacts,
+        alert: 'success'
+    });
+});
+
+
+/* POST add contact */
+router.post('/add/contact', checkToken(), checkContact(), function (req, res, next) {
+
+    var idUser = req.decoded._doc._id;
+
+    var contact = req.contact;
+
+    User.findById(idUser).exec(function (err, user) {
+        
+        console.log(user);
+        
+        if (user) {
+
+            user.contacts.push(contact);
+            
+            user.save()
+                    .then(function () {
+                        
+                        res.json({
+                            error: false,
+                            contact: true,
+                            alert: 'success'
+                        });
+                    }, function (err) {
+                        
+                        res.json({
+                            error: true,
+                            contact: false,
+                            alert: 'success'
+                        });
+                    });
+
+        }
+
+    });
+
+
+
 
 });
 
