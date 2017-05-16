@@ -15,7 +15,6 @@ var app = express();
 var corsOptions = { origin : "http://127.0.0.1:3000" };
 app.use(cors(corsOptions));
 app.set('config', config);
-app.set('key', '456');
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'twig');

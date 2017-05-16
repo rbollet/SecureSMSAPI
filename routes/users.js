@@ -14,6 +14,7 @@ try {
 var jwt = require('jsonwebtoken');
 var Cookies = require("cookies");
 var checkFormLogin = require('../services/checkFormLogin');
+var checkPassword = require('../services/checkPassword');
 
 var checkToken = require('../auth/checkToken');
 
@@ -25,84 +26,53 @@ moment.locale('fr');
 /* GET users listing. */
 router.get('/', function (req, res, next) {
     res.json({
-        error: true,
+        error: false,
         data: {
-            msg: 'Non autorisé'
+            msg: 'test ok'
         }
     });
 });
 
 /* POST - Create an user */
-router.post('/create', function (req, res) {
+router.post('/create', checkPassword(), function (req, res) {
 
     //Check complexe password
     //Ckeck uid in database to be sure a uuid
 
-    if (req.body.password && req.body.password.length > 5) {
-        var password = req.body.password;
+    var password = req.checkPassword;
 
+    var uid = uuid.v4();
+    var hash = crypto.createHash('sha512').update(uid + password + req.app.get('config').secret, 'utf-8').digest('hex');
 
+    var newUser = new User({
+        uid: uid,
+        password: hash
+    });
 
-        var hasUpperCase = /[A-Z]/.test(password);
-        var hasLowerCase = /[a-z]/.test(password);
-        var hasNumbers = /\d/.test(password);
-        var hasNonalphas = /\W/.test(password);
+    newUser.save()
+            .then(function () {
 
-        console.log(hasNonalphas);
-        if (hasUpperCase + hasLowerCase + hasNumbers + hasNonalphas < 4) {
-            res.json({
-                error: true,
+                res.json({
+                    error: false,
+                    uid: uid,
+                    msg: 'Votre compte a été bien créé !',
+                    alert: 'success'
+                });
 
-                msg: 'Votre mot de passe est trop faible !',
-                alert: 'waring'
+            }, function (err) {
+                console.log(err);
+
+                res.json({
+                    error: true,
+                    uid: false,
+                    msg: 'Le mot de passe ne respecte pas la complexité.',
+                    alert: 'warning'
+                });
             });
-
-        } else {
-
-
-
-            var uid = uuid.v4();
-
-            var hash = crypto.createHash('sha512').update(uid + password + req.app.get('config').secret, 'utf-8').digest('hex');
-
-            var newUser = new User({
-                uid: uid,
-                password: hash
-            });
-
-            newUser.save()
-                    .then(function () {
-
-                        res.json({
-                            error: false,
-                            uid: uid,
-                            msg: 'Votre compte a été bien créé !',
-                            alert: 'success'
-                        });
-
-                    }, function (err) {
-                        console.log(err);
-                        res.json({
-                            error: true,
-                            msg: 'Le mot de passe ne respecte pas la complexité.',
-                            alert: 'warning'
-                        });
-
-                    });
-        }
-    } else {
-
-        res.json({
-            error: true,
-            msg: 'Le mot de passe ne respecte pas la complexité.',
-            alert: 'warning'
-        });
-    }
-
 });
 
 /* POST - Login page. */
-router.post('/login', checkFormLogin, function (req, res, next) {
+router.post('/login', checkFormLogin(), function (req, res, next) {
 
     var uid = req.body.uid;
     var password = req.body.password;
@@ -115,7 +85,6 @@ router.post('/login', checkFormLogin, function (req, res, next) {
 
             res.status(401).json({
                 error: true,
-                uid: uid,
                 msg: 'Attention ! Vos identifiants sont erronés !',
                 alert: 'warning',
                 code: 1
@@ -130,7 +99,6 @@ router.post('/login', checkFormLogin, function (req, res, next) {
 
                 res.status(401).json({
                     error: true,
-                    uid: uid,
                     msg: 'Attention ! Vos identifiants sont erronés !',
                     alert: 'warning',
                     code: 2
@@ -141,7 +109,7 @@ router.post('/login', checkFormLogin, function (req, res, next) {
                 // if user is found and password is right
                 // create a token
                 var token = jwt.sign(user, req.app.get('config').secret, {
-                    expiresIn: 86400 // expires in 24 hours
+                    expiresIn: 3600 // expires in 1 hour
                 });
 
                 new Cookies(req, res).set('access_token', token, {
@@ -188,6 +156,7 @@ router.get('/auth', checkToken(), function (req, res, next) {
         });
 
     } else {
+
         res.json({
             error: false,
             msg: 'ok',
@@ -200,53 +169,63 @@ router.get('/auth', checkToken(), function (req, res, next) {
 /* TODO POST - Update password */
 router.post('/modify/password', checkToken(), function (req, res, next) {
 
-    //Check complexe password
-    //Ckeck uid
+    console.log('uid : ' + req.body.uid);
+    console.log('decoded uid : ' + req.decoded._doc.uid);
+    console.log('old : ' + req.body.oldpassword);
+    console.log('new : ' + req.body.newpassword);
 
-    if (req.body.oldpassword && req.body.newpassword.length > 7) {
+    if (req.decoded._doc.uid === req.body.uid) {
 
-        if (req.body.newpassword && req.body.newpassword.length > 7) {
-            var uid = uuid.v4();
-            var password = req.body.password;
-            var hash = crypto.createHash('sha512').update(uid + password + salt, 'utf-8').digest('hex');
+        var oldpassword = req.body.oldpassword;
+        var oldhash = crypto.createHash('sha512').update(req.decoded.uid + oldpassword + req.app.get('config').secret, 'utf-8').digest('hex');
 
-            var newUser = new User({
-                identifiant: uid,
-                password: hash
+        var newpassword = req.body.newpassword;
+        var hash = crypto.createHash('sha512').update(req.decoded.uid + newpassword + req.app.get('config').secret, 'utf-8').digest('hex');
+
+        User.findOne({
+            uid: req.decoded._doc.uid
+            
+        }, function (err, user) {
+            console.log(user);
+
+            res.status(200).json({
+                error: false,
+                msg: 'ok',
+                alert: 'success',
+                code: false
             });
+        });
 
-            newUser.save()
-                    .then(function () {
 
-                        res.json({
-                            error: false,
-                            uid: uid,
-                            msg: 'Votre compte a été bien créé !',
-                            alert: 'success'
-                        });
-
-                    }, function (err) {
-                        console.log(err);
-                        res.json({
-                            error: true,
-                            msg: 'Le mot de passe ne respecte pas la complexité.',
-                            alert: 'warning'
-                        });
-
-                    });
-
-        } else {
-
-        }
+        /*newUser.save()
+         .then(function () {
+         
+         res.json({
+         error: false,
+         uid: uid,
+         msg: 'Votre compte a été bien créé !',
+         alert: 'success'
+         });
+         
+         }, function (err) {
+         console.log(err);
+         res.json({
+         error: true,
+         msg: 'Le mot de passe ne respecte pas la complexité.',
+         alert: 'warning'
+         });
+         
+         });*/
 
     } else {
-
         res.json({
             error: true,
             msg: 'Vous n\'avez pas saisi le mot de passe actuel !',
             alert: 'warning'
         });
     }
+
+
 });
 
 

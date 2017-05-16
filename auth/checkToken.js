@@ -6,8 +6,8 @@
 var jwt = require('jsonwebtoken');
 var Cookies = require("cookies");
 
-
 function checkToken() {
+    
     return function (req, res, next) {
         req.decoded = false;
         // check header or url parameters or post parameters for token
@@ -21,29 +21,36 @@ function checkToken() {
 
         console.log(token);
 
-
         if (typeof (token) !== 'undefined') {
 
             // verifies secret and checks exp
             jwt.verify(token, req.app.get('config').secret, function (err, decoded) {
                 if (err) {
                     req.decoded = false;
-                    next();
 
+                    res.status(401).json({
+                        error: true,
+                        message: 'Vous êtes déconnecté !'
+                    });
+                    
+                    res.send();
 
                 } else {
-                   
+
                     console.log(decoded);
                     req.decoded = decoded;
+
                     next();
-
-
                 }
             });
         } else {
-            req.decoded = false;
-            next();
 
+            res.status(401).json({
+                error: true,
+                message: 'Vous êtes déconnecté !'
+            });
+            
+            res.send();
         }
     };
 }
