@@ -176,46 +176,61 @@ router.post('/modify/password', checkToken(), function (req, res, next) {
 
     if (req.decoded._doc.uid === req.body.uid) {
 
+        var uid = req.decoded._doc.uid;
         var oldpassword = req.body.oldpassword;
-        var oldhash = crypto.createHash('sha512').update(req.decoded.uid + oldpassword + req.app.get('config').secret, 'utf-8').digest('hex');
-
-        var newpassword = req.body.newpassword;
-        var hash = crypto.createHash('sha512').update(req.decoded.uid + newpassword + req.app.get('config').secret, 'utf-8').digest('hex');
+        var oldhash = crypto.createHash('sha512').update(uid + oldpassword + req.app.get('config').secret, 'utf-8').digest('hex');
 
         User.findOne({
-            uid: req.decoded._doc.uid
-            
-        }, function (err, user) {
-            console.log(user);
+            $and: [{uid: uid}, {password: oldhash}]
 
-            res.status(200).json({
-                error: false,
-                msg: 'ok',
-                alert: 'success',
-                code: false
-            });
+        }).exec(function (err, user) {
+
+            if (!user) {
+
+                res.status(401).json({
+                    error: true,
+                    logout: false,
+                    msg: 'Attention ! Vos identifiants sont erronés !',
+                    alert: 'warning',
+                    code: 1
+                });
+
+            } else {
+                console.log(user);
+
+                var newpassword = req.body.newpassword;
+                var newhash = crypto.createHash('sha512').update(uid + newpassword + req.app.get('config').secret, 'utf-8').digest('hex');
+
+                var attributs = {
+                    password: newhash
+                };
+
+                User.findByIdAndUpdate(user._id, attributs, function (err, user) {
+                    if (err) {
+
+                        res.json({
+                            error: true,
+                            logout: false,
+                            msg: 'Pas de changement de mot de passe !',
+                            alert: 'warning'
+                        });
+                    } else {
+
+                        new Cookies(req, res).set('access_token', '', {
+                            httpOnly: true,
+                            secure: false      // for your production environment
+                        });
+
+                        res.json({
+                            error: false,
+                            logout: true,
+                            msg: 'Mot de passe changé ! Vous allez être déconnecté !',
+                            alert: 'success'
+                        });
+                    }
+                });
+            }
         });
-
-
-        /*newUser.save()
-         .then(function () {
-         
-         res.json({
-         error: false,
-         uid: uid,
-         msg: 'Votre compte a été bien créé !',
-         alert: 'success'
-         });
-         
-         }, function (err) {
-         console.log(err);
-         res.json({
-         error: true,
-         msg: 'Le mot de passe ne respecte pas la complexité.',
-         alert: 'warning'
-         });
-         
-         });*/
 
     } else {
         res.json({
@@ -225,8 +240,6 @@ router.post('/modify/password', checkToken(), function (req, res, next) {
         });
     }
 
-
 });
-
 
 module.exports = router;
