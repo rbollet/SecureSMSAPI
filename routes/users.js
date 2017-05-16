@@ -314,6 +314,30 @@ router.post('/add/contact', checkToken(), checkContact(), function (req, res, ne
     });
 });
 
+/* POST a new sms */
+router.post('/add/contact', checkToken(), checkContact(), checkRoom(), function (req, res, next) {
+
+    var idUser = req.decoded._doc._id;
+    var contact = req.contact;
+
+    //Créer checkRoom : si uid room existe, donc on a déjà une room créée entre deux users
+    // si pas uid room, on doit initialiser une nouvelle room
+    
+    // vérifier idUser = from
+    // vérifier checkContact = to
+    
+    // vérifier si sms string existe
+    
+    // Ajouter sms, from, to, date, expire, time, etat, et room (nouvelle ou existante)
+    
+    // Ajouter le sms créé dans la salle
+    
+    // Envoi une notification à l'utilisateur : voir pour intégrer socket.io dans Swift3
+    
+    // L'utilisateur doit cliquer sur l'icone pour visualiser le message
+
+    
+});
 
 
 
