@@ -24,7 +24,7 @@ var moment = require('moment');
 moment.locale('fr');
 
 
-/* GET users listing. */
+/* GET users homepage test */
 router.get('/', function (req, res, next) {
     res.json({
         error: false,
@@ -78,14 +78,13 @@ router.post('/login', checkFormLogin(), function (req, res, next) {
     var uid = req.body.uid;
     var password = req.body.password;
 
-    User.findOne({
-        uid: uid
-    }, function (err, user) {
+    User.findOne({uid: uid}).populate('contacts').exec(function (err, user) {
 
         if (!user) {
 
             res.status(401).json({
                 error: true,
+                auth: false,
                 msg: 'Attention ! Vos identifiants sont erronés !',
                 alert: 'warning',
                 code: 1
@@ -100,6 +99,7 @@ router.post('/login', checkFormLogin(), function (req, res, next) {
 
                 res.status(401).json({
                     error: true,
+                    auth: false,
                     msg: 'Attention ! Vos identifiants sont erronés !',
                     alert: 'warning',
                     code: 2
@@ -110,7 +110,7 @@ router.post('/login', checkFormLogin(), function (req, res, next) {
                 // if user is found and password is right
                 // create a token
                 var token = jwt.sign(user, req.app.get('config').secret, {
-                    expiresIn: 3600 // expires in 1 hour
+                    expiresIn: 36000 // expires in 1 hour
                 });
 
                 new Cookies(req, res).set('access_token', token, {
@@ -120,7 +120,9 @@ router.post('/login', checkFormLogin(), function (req, res, next) {
 
                 res.json({
                     error: false,
-                    msg: '',
+                    auth: true,
+                    contacts: user.contacts,
+                    msg: 'Vous êtes connecté !',
                     alert: 'success'
                 });
 
@@ -144,7 +146,6 @@ router.get('/logout', function (req, res, next) {
     });
 });
 
-
 /* GET test auth page. */
 router.get('/auth', checkToken(), function (req, res, next) {
 
@@ -165,7 +166,6 @@ router.get('/auth', checkToken(), function (req, res, next) {
         });
     }
 });
-
 
 /* POST - Update password */
 router.post('/modify/password', checkToken(), function (req, res, next) {
@@ -243,61 +243,78 @@ router.post('/modify/password', checkToken(), function (req, res, next) {
 
 });
 
-/* GET logout page. */
+/* GET contacts liste */
 router.get('/contacts', checkToken(), function (req, res, next) {
 
     var id = req.decoded._doc._id;
+    //var contacts = req.decoded._doc.contacts;
 
-    var contacts = req.decoded._doc.contacts;
+    User.findById(id).populate('contacts').exec(function (err, user) {
 
+        if (!user) {
 
-    res.json({
-        error: false,
-        contacts: contacts,
-        alert: 'success'
+            res.status(401).json({
+                error: true,
+                auth: false,
+                msg: 'Attention ! Vous devez vous reconnecter !',
+                alert: 'warning',
+                code: 1
+            });
+
+        } else {
+
+            let contacts = [];
+            
+            user.contacts.forEach(function (contact){
+               contacts.push({uid : contact.uid}) ;
+            });
+
+            res.json({
+                error: false,
+                contacts: contacts,
+                alert: 'success'
+            });
+        }
     });
-});
 
+
+});
 
 /* POST add contact */
 router.post('/add/contact', checkToken(), checkContact(), function (req, res, next) {
 
     var idUser = req.decoded._doc._id;
-
     var contact = req.contact;
 
     User.findById(idUser).exec(function (err, user) {
-        
+
         console.log(user);
-        
+
         if (user) {
 
             user.contacts.push(contact);
-            
+
             user.save()
                     .then(function () {
-                        
+
                         res.json({
                             error: false,
                             contact: true,
                             alert: 'success'
                         });
                     }, function (err) {
-                        
+
                         res.json({
                             error: true,
                             contact: false,
-                            alert: 'success'
+                            alert: 'warning'
                         });
                     });
-
         }
-
     });
-
-
-
-
 });
+
+
+
 
 module.exports = router;

@@ -1,5 +1,10 @@
 var User = require('../models/userDB');
 
+/**
+ * Permet de retrouver un contact
+ * Return user trouvé
+ * @returns {Function}
+ */
 function checkContact() {
     return function (req, res, next) {
         
@@ -7,7 +12,6 @@ function checkContact() {
         
         console.log('uid' + uid);
         
-
         User.findOne({
             uid: uid
         }, function (err, user) {

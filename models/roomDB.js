@@ -14,13 +14,17 @@ db.on('open', function(){
 
 var Schema = mongoose.Schema;
 
-var contactSchema = new Schema({
-    pseudo: {type: String, required: "Le pseudo est obligatoire !"},    
-
+var roomSchema = new Schema({
+    uid: {type: String, required: true },
+    created_at: { type : Date, default : Date.now },
+    updated_at: { type : Date, default : Date.now },
+    from: {type : mongoose.Schema.Types.ObjectId, ref : "User", required: true },
+    to: {type : mongoose.Schema.Types.ObjectId, ref : "User", required: true },
+    sms: [{type : mongoose.Schema.Types.ObjectId, ref : "Sms", required: false }]        
 });
 
 // Create a model using userSchema
-var User = mongoose.model('Contact', contactSchema);
+var Room = mongoose.model('Room', roomSchema);
 
 // make this available to our users in our Node applications
-module.exports = User;
+module.exports = Room;
