@@ -21,8 +21,8 @@ var smsSchema = new Schema({
     time: { type : Number, required: false },
     etat: { type : Boolean, default : false },
     from: {type : mongoose.Schema.Types.ObjectId, ref : "User", required: "l'expéditeur est obligatoire"},
-    to: {type : mongoose.Schema.Types.ObjectId, ref : "User", required: "le correspondant est obligatoire"}
-    
+    to: {type : mongoose.Schema.Types.ObjectId, ref : "User", required: "le correspondant est obligatoire"},
+    room: [{type : mongoose.Schema.Types.ObjectId, ref : "Room", required: false }]   
  
 });
 
