@@ -108,7 +108,7 @@ router.post('/add/contact', checkToken(), checkContact(), function (req, res, ne
 
                         res.json({
                             error: "false",
-                            contact: "true",
+                            add: "true",
                             msg: "Contact added",
                             alert: 'success'
                         });
@@ -116,7 +116,7 @@ router.post('/add/contact', checkToken(), checkContact(), function (req, res, ne
 
                         res.json({
                             error: "true",
-                            contact: "false",
+                            add: "false",
                             msg: "Contact not added",
                             alert: 'warning'
                         });
