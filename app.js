@@ -7,12 +7,13 @@ var express         = require('express'),
     bodyParser      = require('body-parser'),
     index           = require('./routes/index'),
     users           = require('./routes/users'),
+    contacts        = require('./routes/contacts'),
     cors            = require('cors'),
     config          = require('./private/config');
 
 var app = express();
 
-var corsOptions = { origin : "http://127.0.0.1:3000" };
+//var corsOptions = { origin : "http://127.0.0.1:3000" };
 //app.use(cors(corsOptions));
 app.use(cors());
 app.set('config', config);
@@ -30,6 +31,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
 app.use('/users', users);
+app.use('/contacts', contacts);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
