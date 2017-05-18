@@ -50,34 +50,34 @@ router.get('/contacts', checkToken(), function (req, res, next) {
             });
         }
     });
-
-
 });
 
 /* Find a contact by uid */
 router.post('/find/contact', checkToken(), checkContact(), function (req, res, next) {
 
+    console.log("find contact ? ")
     var uid = req.contact.uid;
 
-    User.find({uid : uid  }).exec(function (err, contact) {
+    User.find({uid : uid}).exec(function (err, contact) {
 
         console.log(contact);
 
         if (contact) {
             res.json({
                 error: "false",
-                uid: uid,
-                alert: "success"
+                uid: contact.uid,
+                alert: "success",
+                msg: "Contact found"
             });
             
         }else{
             res.json({
                 error: "true",
                 uid: "false",
-                alert: "warning"
+                alert: "warning",
+                msg: "Contact not found"
             });
-        }
-            
+        }            
     });
 });
 
@@ -86,28 +86,38 @@ router.post('/add/contact', checkToken(), checkContact(), function (req, res, ne
 
     var idUser = req.decoded._doc._id;
     var contact = req.contact;
+    var pseudo = "";
 
-    User.findById(idUser).exec(function (err, user) {
+    if(req.body.pseudo !== "") {
+        var pseudo = req.body.pseudo;
+    }else{
+        var pseudo = "";
+    }
+       
+    // On recherche d'abord l'utilisateur connecté
+    User.findById(idUser).exec(function (err, userConnected) {
 
-        console.log(user);
+        console.log(userConnected);
 
-        if (user) {
+        if (userConnected) {
 
-            user.contacts.push(contact);
+            userConnected.contacts.push(contact);
 
-            user.save()
+            userConnected.save()
                     .then(function () {
 
                         res.json({
-                            error: false,
-                            contact: true,
+                            error: "false",
+                            contact: "true",
+                            msg: "Contact added",
                             alert: 'success'
                         });
                     }, function (err) {
 
                         res.json({
-                            error: true,
-                            contact: false,
+                            error: "true",
+                            contact: "false",
+                            msg: "Contact not added",
                             alert: 'warning'
                         });
                     });

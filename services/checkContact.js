@@ -19,8 +19,8 @@ function checkContact() {
             if (!user) {
 
                 res.status(404).json({
-                    error: false,
-                    msg: 'Contact non trouvé !',
+                    error: "false",
+                    msg: 'Contact not found !',
                     alert: 'info',
                     code: 1
                 });

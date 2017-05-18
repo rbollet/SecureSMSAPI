@@ -15,7 +15,6 @@ var jwt = require('jsonwebtoken');
 var Cookies = require("cookies");
 var checkFormLogin = require('../services/checkFormLogin');
 var checkPassword = require('../services/checkPassword');
-var checkContact = require('../services/checkContact');
 
 var checkToken = require('../auth/checkToken');
 
