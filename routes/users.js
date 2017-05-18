@@ -86,7 +86,7 @@ router.post('/login', checkFormLogin(), function (req, res, next) {
 
             res.status(401).json({
                 error: true,
-                auth: false,
+                auth: "no",
                 msg: 'Attention ! Vos identifiants sont erronés !',
                 alert: 'warning',
                 code: 1
@@ -101,7 +101,7 @@ router.post('/login', checkFormLogin(), function (req, res, next) {
 
                 res.status(401).json({
                     error: true,
-                    auth: false,
+                    auth: "no",
                     msg: 'Attention ! Vos identifiants sont erronés !',
                     alert: 'warning',
                     code: 2
@@ -122,7 +122,7 @@ router.post('/login', checkFormLogin(), function (req, res, next) {
 
                 res.json({
                     error: false,
-                    auth: true,
+                    auth: "yes",
                     contacts: user.contacts,
                     msg: 'Vous êtes connecté !',
                     alert: 'success'
