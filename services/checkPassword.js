@@ -23,7 +23,7 @@ function checkPassword() {
 
                 res.status(401).json({
                     error: true,
-                    message: 'Le mot de passe ne respecte pas la complexité.',
+                    message: 'Le mot de passe ne respecte pas la complexite.',
                     alert: 'warning'
                 });
                 res.send();
@@ -34,7 +34,8 @@ function checkPassword() {
 
             res.status(401).json({
                 error: true,
-                message: 'Le mot de passe doit avoir 8 caractères minimum.',
+                password: password,
+                message: 'Le mot de passe doit avoir 8 caracteres minimum.',
                 alert: 'warning'
             });
             res.send();

@@ -13,7 +13,8 @@ var express         = require('express'),
 var app = express();
 
 var corsOptions = { origin : "http://127.0.0.1:3000" };
-app.use(cors(corsOptions));
+//app.use(cors(corsOptions));
+app.use(cors());
 app.set('config', config);
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

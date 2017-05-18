@@ -42,6 +42,8 @@ router.post('/create', checkPassword(), function (req, res) {
 
     var password = req.checkPassword;
 
+    console.log('password : ' + password);
+
     var uid = uuid.v4();
     var hash = crypto.createHash('sha512').update(uid + password + req.app.get('config').secret, 'utf-8').digest('hex');
 
@@ -315,7 +317,7 @@ router.post('/add/contact', checkToken(), checkContact(), function (req, res, ne
 });
 
 /* POST a new sms */
-router.post('/add/contact', checkToken(), checkContact(), checkRoom(), function (req, res, next) {
+router.post('/add/contact', checkToken(), checkContact(), function (req, res, next) {
 
     var idUser = req.decoded._doc._id;
     var contact = req.contact;
